@@ -38,11 +38,10 @@ export class DeChat extends LitElement {
   }
 
   firstUpdated() {
-    let _stage = this.for && q$(this.for) ||
+    const _stage = this.for && q$(this.for) ||
       this.renderRoot.host.parentNode;
-    if (_stage.host) _stage = _stage.host;
     this._stage = _stage;
-    this.api = _stage.api || globalThis.deAPI || aichat;
+    this.api = (_stage.host || _stage).api || globalThis.deAPI || aichat;
   }
 
   ask(something) {
@@ -116,7 +115,7 @@ export class DeChat extends LitElement {
   }
 
   notify(name, detail) {
-    this._stage.dispatchEvent(
+    (this._stage.host || this._stage).dispatchEvent(
       new CustomEvent(name, { detail }),
     );
   }
