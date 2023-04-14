@@ -86,6 +86,9 @@ async function handler(request: Request): Promise<Response> {
           key = xkey;
         }
       }
+      if (!key || key.length <= 8) {
+        key = Deno.env.get("OPENAI_API_KEY");
+      }
       if (key && key.length > 8) {
         return new OpenAI(key);
       }
