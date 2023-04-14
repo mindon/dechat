@@ -51,7 +51,7 @@ export class QiChat extends LitElement {
 
     this.new();
 
-    window.addEventListener("onbeforeunload", (evt) => {
+    window.addEventListener("beforeunload", (evt) => {
       let busying = false;
       q$$("de-chat", this.renderRoot, (q) => {
         if (busying) return;
