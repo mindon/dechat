@@ -30,6 +30,7 @@ export class DeChat extends LitElement {
     api: { type: Object },
     lang: { type: String },
     for: { type: String },
+    _tid: { type: Object },
     _waiting: { type: Array },
     _stage: { type: HTMLElement },
   };
@@ -109,10 +110,12 @@ export class DeChat extends LitElement {
   }
 
   input(c) {
-    const { renderRoot } = this;
+    const { renderRoot, _tid } = this;
+    if (_tid) clearTimeout(_tid);
     const mysay = q$("#mysay", renderRoot);
     if (c || typeof c === "string") mysay.value = c.trim();
-    setTimeout(() => {
+    this._tid = setTimeout(() => {
+      if (renderRoot.host.classList.contains("fin")) return;
       q$("#mysay", renderRoot).focus();
     }, 300);
   }
@@ -129,14 +132,12 @@ export class DeChat extends LitElement {
 
   focus() {
     const { renderRoot } = this;
-    const p = this._stage;
-    q$$("de-chat", p, (t) => {
-      const cl = t.classList;
-      if (cl.contains("fin")) return;
-      cl.add("fin");
-    });
-    if (renderRoot.host.classList.contains("fin")) {
-      renderRoot.host.classList.remove("fin");
+    if (this._stage) {
+      this.notify("de-focus", renderRoot.host);
+    }
+    const cl = renderRoot.host.classList;
+    if (cl.contains("fin")) {
+      cl.remove("fin");
     }
     this.input();
   }

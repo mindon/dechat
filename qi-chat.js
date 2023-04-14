@@ -49,6 +49,13 @@ export class QiChat extends LitElement {
       this._available = false;
     }
 
+    c.addEventListener("de-focus", (evt) => {
+      q$$("de-chat", this.renderRoot, (q) => {
+        if (q == evt.detail) return;
+        q.classList.add("fin");
+      });
+    });
+
     this.new();
 
     window.addEventListener("beforeunload", (evt) => {
@@ -94,10 +101,10 @@ export class QiChat extends LitElement {
 
   // new chat
   new() {
-    let last = q$("#ia", this.renderRoot).previousElementSibling;
+    const ia = q$("#ia", this.renderRoot);
+    let last = ia.previousElementSibling;
     if (!last || last.active()) {
       const c = doc.createElement("de-chat");
-      const ia = q$("#ia", this.renderRoot);
       this.renderRoot.insertBefore(c, ia);
       last = c;
     }
