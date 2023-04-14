@@ -21,6 +21,8 @@ t$.got({
   },
 });
 
+// TODO - plugins for 1) input pane, render, api, 2) output render
+
 // DeChat Component
 export class DeChat extends LitElement {
   static properties = {
@@ -58,7 +60,8 @@ export class DeChat extends LitElement {
 
     po$t(cells, (c, streaming) => {
       const { fin = !streaming, err, cell } = got(c, streaming);
-      const role = `assistant${err || (typeof fin == 'number' && fin < 0) ? " err" : ""}`;
+      const failed = typeof fin == 'number' && fin < 0;
+      const role = `assistant${err || failed ? " err" : ""}`;
       if (err) {
         this.renderRoot.host.classList.add("fin");
       }
@@ -86,7 +89,7 @@ export class DeChat extends LitElement {
         cells.push({ role, ...cell, content: _waiting.join("") });
         this.cells = cells;
         this._waiting = [];
-        this.notify(`de-${err ? "new" : "changed"}`);
+        this.notify(`de-${err || failed ? "new" : "changed"}`);
         return;
       }
       this._waiting = _waiting.slice(0);
@@ -154,9 +157,7 @@ export class DeChat extends LitElement {
       const p = this.renderRoot.host.parentNode;
       p.removeChild(this.renderRoot.host); // may left something else
     }
-    if (!failed) {
-      this.notify("de-changed");
-    }
+    this.notify("de-changed");
   }
 
   render() {
@@ -275,7 +276,6 @@ export class DeChat extends LitElement {
   .err {
     color: #a00;
     text-align: center;
-    padding-bottom: 1rem;
   }
   .user > p,
   .assistant > p {
