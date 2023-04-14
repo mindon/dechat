@@ -83,7 +83,7 @@ export class DeChat extends LitElement {
         _waiting.push(s);
       }
       if (fin !== false) {
-        cells.push({ role, ...cell, content: _waiting });
+        cells.push({ role, ...cell, content: _waiting.join("") });
         this.cells = cells;
         this._waiting = [];
         this.notify(`de-${err ? "new" : "changed"}`);
@@ -151,7 +151,7 @@ export class DeChat extends LitElement {
     if (this.cells.length > 0) {
       this.requestUpdate();
     } else {
-      const p = this.renderRoot.host.parentElement;
+      const p = this.renderRoot.host.parentNode;
       p.removeChild(this.renderRoot.host); // may left something else
     }
     if (!failed) {
