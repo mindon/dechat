@@ -275,7 +275,7 @@ export class DeChat extends LitElement {
   .err {
     color: #a00;
     text-align: center;
-    padding: auto 1rem;
+    padding-bottom: 1rem;
   }
   .user > p,
   .assistant > p {
