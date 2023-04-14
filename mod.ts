@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.183.0/http/server.ts";
 import { OpenAI } from "https://raw.githubusercontent.com/mindon/openai/master/mod.ts";
 
-const openAI = new OpenAI(Deno.env.get("OPENAI_API_KEY")!);
 const openVIP: { [key: string]: OpenAI } = {};
 
 const mimes: { [key: string]: string } = {
@@ -90,8 +89,10 @@ async function handler(request: Request): Promise<Response> {
       if (key && key.length > 8) {
         return new OpenAI(key);
       }
-      return openAI;
     })();
+    if (!ai) {
+      return new Response("OpenAI key required", { status: 401 });
+    }
 
     const completion = await ai.createChatCompletion({
       ...xai,

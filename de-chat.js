@@ -293,7 +293,6 @@ export class DeChat extends LitElement {
   .user > p {
     text-index: 0rem;
   }
-  
   .assistant::before {
     width: 20px;
     height: 20px;

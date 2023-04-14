@@ -101,10 +101,26 @@ export async function po$t(list, cb, { api, headers, streaming }) {
     body,
   });
 
-  // if (resp.status >= 400) {
-  //   cb({ err: `${resp.status}: ${await resp.text() || resp.statusText}: ` });
-  //   return;
-  // }
+  if (resp.status >= 400) {
+    let c = await resp.text();
+    if (c.startsWith("{")) {
+      try {
+        const d = JSON.parse(c);
+        const { error = {}, err = "" } = d;
+        if (err) {
+          c = err;
+        } else {
+          if (typeof error === "string") {
+            c = error;
+          } else if (error.message) {
+            c = error.message;
+          }
+        }
+      } catch (err) {}
+    }
+    cb({ err: `${resp.status}: ${c || resp.statusText}: ` });
+    return;
+  }
 
   if (!streaming) {
     cb(await resp.json());
