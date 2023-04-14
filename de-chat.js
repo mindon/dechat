@@ -309,9 +309,6 @@ export class DeChat extends LitElement {
   .assistant:hover a.btn {
     display: inline-flex;
   }
-  .err a.btn {
-    display: none!important;
-  }
   a * {
     pointer-events: none;
   }
