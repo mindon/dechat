@@ -90,7 +90,7 @@ export class DeChat extends LitElement {
         this.notify(`de-${err ? "new" : "changed"}`);
         return;
       }
-      this._waiting = _waiting;
+      this._waiting = _waiting.slice(0);
     }, { api: url, streaming, headers });
   }
 
