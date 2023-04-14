@@ -177,7 +177,7 @@ export const aichat = {
       const { error = {} } = z;
       if (error.message) {
         fin = -2;
-        return `[!ERR]${error.message}`;
+        return `[!ERR] ${error.message}`;
       }
       return z;
     }).map((v) =>

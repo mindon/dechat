@@ -58,7 +58,7 @@ export class DeChat extends LitElement {
 
     po$t(cells, (c, streaming) => {
       const { fin = !streaming, err, cell } = got(c, streaming);
-      const role = `assistant${err ? " err" : ""}`;
+      const role = `assistant${err || (typeof fin == 'number' && fin < 0) ? " err" : ""}`;
       if (err) {
         this.renderRoot.host.classList.add("fin");
       }
