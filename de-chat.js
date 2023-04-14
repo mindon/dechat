@@ -38,8 +38,9 @@ export class DeChat extends LitElement {
   }
 
   firstUpdated() {
-    const _stage = this.for && q$(this.for) ||
+    let _stage = this.for && q$(this.for) ||
       this.renderRoot.host.parentNode;
+    if (_stage.host) _stage = _stage.host;
     this._stage = _stage;
     this.api = _stage.api || globalThis.deAPI || aichat;
   }

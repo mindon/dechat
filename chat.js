@@ -61,7 +61,7 @@ export class QiChat extends LitElement {
       }
       let qi = q$("#ia", this.renderRoot);
       const last = qi.previousElementSibling;
-      if (last && (!last.notes || last.notes.length == 0)) {
+      if (last && (!last.cells || last.cells.length == 0)) {
         qi = last;
       }
       data.forEach((d) => {
