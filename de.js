@@ -101,10 +101,10 @@ export async function po$t(list, cb, { api, headers, streaming }) {
     body,
   });
 
-  if (resp.status >= 400) {
-    cb({ err: `${resp.status}: ${await resp.text() || resp.statusText}: ` });
-    return;
-  }
+  // if (resp.status >= 400) {
+  //   cb({ err: `${resp.status}: ${await resp.text() || resp.statusText}: ` });
+  //   return;
+  // }
 
   if (!streaming) {
     cb(await resp.json());
