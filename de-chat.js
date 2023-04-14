@@ -86,7 +86,7 @@ export class DeChat extends LitElement {
         cells.push({ role, ...cell, content: _waiting });
         this.cells = cells;
         this._waiting = [];
-        this.notify(`de-${failed ? "new" : "changed"}`);
+        this.notify(`de-${err ? "new" : "changed"}`);
         return;
       }
       this._waiting = _waiting;
