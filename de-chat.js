@@ -117,6 +117,10 @@ export class DeChat extends LitElement {
     }, 300);
   }
 
+  active() {
+    return this.cells?.length > 0 || this._waiting?.length > 0;
+  }
+
   notify(name, detail) {
     (this._stage.host || this._stage).dispatchEvent(
       new CustomEvent(name, { detail }),

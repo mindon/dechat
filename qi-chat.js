@@ -31,7 +31,7 @@ export class QiChat extends LitElement {
     c.addEventListener("de-changed", () => {
       const data = [];
       q$$("de-chat", this.renderRoot, (q) => {
-        if (q.cells && q.cells.length > 0) {
+        if (q.cells?.length > 0) {
           data.push(q.cells);
         }
       });
@@ -75,7 +75,7 @@ export class QiChat extends LitElement {
       }
       let qi = q$("#ia", this.renderRoot);
       const last = qi.previousElementSibling;
-      if (last && (!last.cells || last.cells.length == 0)) {
+      if (last && (!last.active())) {
         qi = last;
       }
       data.forEach((d) => {
@@ -95,7 +95,7 @@ export class QiChat extends LitElement {
   // new chat
   new() {
     let last = q$("#ia", this.renderRoot).previousElementSibling;
-    if (!last || (last.cells && last.cells.length > 0)) {
+    if (!last || last.active()) {
       const c = doc.createElement("de-chat");
       const ia = q$("#ia", this.renderRoot);
       this.renderRoot.insertBefore(c, ia);
@@ -122,7 +122,7 @@ export class QiChat extends LitElement {
   clear() {
     if (!data$("ai") || !confirm("确认要清除所有记录？")) return;
     q$$("de-chat", this.renderRoot, (t) => {
-      if (!t.cells || t.cells.length == 0) return;
+      if (!t.active()) return;
       t.parentNode.removeChild(t);
     });
     data$("ai", false);
