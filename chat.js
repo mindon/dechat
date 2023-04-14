@@ -50,6 +50,20 @@ export class QiChat extends LitElement {
     }
 
     this.new();
+
+    window.addEventListener("onbeforeunload", (evt) => {
+      let busying = false;
+      q$$("de-chat", this.renderRoot, (q) => {
+        if (busying) return;
+        if (q._waiting && q._waiting.length > 0) {
+          busying = true;
+        }
+      });
+      if (busying) {
+        evt.preventDefault();
+        return (evt.returnValue = "还有对话没有结束，确定离开？");
+      }
+    }, { capture: true });
   }
 
   // load logs
