@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.183.0/http/server.ts";
+import { serveFile } from "https://deno.land/std@0.183.0/http/file_server.ts";
 import { OpenAI } from "https://raw.githubusercontent.com/mindon/openai/master/mod.ts";
 
+const key = Deno.env.get("OPENAI_API_KEY");
+const openAI = key ? new OpenAI(key) : null;
 const openVIP: { [key: string]: OpenAI } = {};
 
 const mimes: { [key: string]: string } = {
@@ -86,17 +89,18 @@ async function handler(request: Request): Promise<Response> {
           key = xkey;
         }
       }
-      if (!key || key.length <= 8) {
+      if (!openAI && (!key || key && key.length <= 8)) {
         key = Deno.env.get("OPENAI_API_KEY");
       }
       if (key && key.length > 8) {
         return new OpenAI(key);
       }
+      return openAI;
     })();
+
     if (!ai) {
       return new Response("OpenAI key required", { status: 401 });
     }
-
     const completion = await ai.createChatCompletion({
       ...xai,
     });
@@ -121,29 +125,28 @@ async function handler(request: Request): Promise<Response> {
   if (pathname.endsWith("/")) {
     pathname = `${pathname}index.html`;
   }
-  const m = pathname.match(/\.(html|css|js|jpg|jpeg|png|svg|csv)$/);
-  if (m && mimes[m[1]]) {
-    try {
-      const file = await Deno.readFile(`.${pathname}`);
-      const headers = {
-        "content-type": mimes[m[1]],
-      };
-      if (pathname.startsWith("/lib/")) {
-        headers["Access-Control-Allow-Origin"] = "*";
-      }
-      return new Response(file, {
-        headers,
-      });
-    } catch (err) {
-      if (err instanceof Deno.errors.NotFound) {
-        return new Response("Not Found", { status: 404 });
-      } else {
-        throw err;
-      }
-    }
-  } else {
-    return new Response("Hello, DeChat - from Mindon");
+
+  const resp = await serveFile(request, pathname.substring(1));
+  const { status, statusText } = resp;
+  const headers = [...resp.headers];
+  let body = resp.body;
+  let updated = false;
+  if (resp.status >= 400) {
+    body = "Hello, DeChat - from Mindon";
+    updated = true;
   }
+  if (pathname.startsWith("/lib/")) {
+    headers.push(["Access-Control-Allow-Origin", "*"]);
+    updated = true;
+  }
+  if (updated) {
+    return new Response(body, {
+      headers,
+      status,
+      statusText,
+    });
+  }
+  return resp;
 }
 
 serve(handler, {
