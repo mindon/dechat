@@ -132,13 +132,13 @@ async function handler(request: Request): Promise<Response> {
       });
     } catch (err) {
       if (err instanceof Deno.errors.NotFound) {
-        return new Response("Not found in deqi - from mindon", { status: 404 });
+        return new Response("Not Found", { status: 404 });
       } else {
         throw err;
       }
     }
   } else {
-    return new Response("Hello, DeQi - from Mindon");
+    return new Response("Hello, DeChat - from Mindon");
   }
 }
 
