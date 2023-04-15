@@ -17,10 +17,17 @@ body {
   <body>
   <div style="text-align: center; color: #999;margin:1rem auto">
     跟ChatGPT-3.5聊聊天 :-p
-    <div style="zoom:.6">需要用自己的key对应网址，微信联系 @mindon</div>
+    <div style="zoom:.6" id="myvip">需要用自己的key对应网址，微信联系 @mindon</div>
   </div>
   <qi-chat></qi-chat>
   <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a></div>
   <script type="module" src="qi-chat.js"></script>
+  <script>
+    const q = new URL(`about:blank${location.search}`).searchParams;
+    const vip = q.get("vip");
+    if (/^\w{1,16}$/.test(vip)) {
+      document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
+    }
+  </script>
   </body>
 </html>
