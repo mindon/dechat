@@ -162,7 +162,7 @@ export const aichat = {
     if (ik && ik.length > 8) d.push([`${prefix}-key`, ik]);
     if (q.has("vip")) {
       const vip = q.get("vip");
-      if (vip) d.push([`${prefix}-vip`, vip]);
+      if (vip && /^\w{1,16}$/.test(vip)) d.push([`${prefix}-vip`, vip]);
       q.delete("vip");
     }
     const qs = q.toString();

@@ -10,6 +10,7 @@ import "./de-chat.js";
 
 const doc = document;
 const a = doc.createElement("a");
+const qp = new URL(`about:blank${location.search}`).searchParams;
 
 // chat stage
 export class QiChat extends LitElement {
@@ -17,6 +18,7 @@ export class QiChat extends LitElement {
     api: { type: Object },
     _available: { type: Boolean },
     _ik: { type: String },
+    _vip: { type: String },
   };
 
   constructor() {
@@ -24,6 +26,8 @@ export class QiChat extends LitElement {
     this._available = true;
     this._ik = data$("ik");
     this.api = aichat; // {url, streaming, headers:[[]...], got: (d, streaming) => {fin, cell, err?}}
+    const vip = qp.get("vip");
+    this._vip = /^\w{1,16}$/.test(vip) ? vip : "";
   }
 
   firstUpdated() {
@@ -191,6 +195,7 @@ export class QiChat extends LitElement {
         <path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9.5l-1-1-1 1-1-1-1 1-1-1-1 1H6.663a3.5 3.5 0 0 1-3.163 2zM2.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
       </svg>
     </a>
+    <div id="myvip">${this._vip}</div>
     <a class="btn" id="newchat" @click=${this.new}>新话题 &nbsp; <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-square-text-fill" viewBox="0 0 16 16">
     <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.5a1 1 0 0 0-.8.4l-1.9 2.533a1 1 0 0 1-1.6 0L5.3 12.4a1 1 0 0 0-.8-.4H2a2 2 0 0 1-2-2V2zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z"/>
   </svg></a>
@@ -262,6 +267,11 @@ export class QiChat extends LitElement {
 }
 .alarm {
   color: #f00;
+}
+#myvip {
+  margin-left: .5rem;
+  color: #ccc;
+  text-transform: uppercase;
 }
 `;
 }
