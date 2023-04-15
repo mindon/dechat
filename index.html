@@ -25,7 +25,7 @@ body {
   <script>
     const q = new URL(`about:blank${location.search}`).searchParams;
     const vip = q.get("vip");
-    if (/^\w{1,16}$/.test(vip)) {
+    if (vip && /^\w{1,16}$/.test(vip)) {
       document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
     }
   </script>
