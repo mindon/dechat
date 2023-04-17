@@ -88,7 +88,11 @@ export class DeChat extends LitElement {
     this.cells = cells.slice(0);
     this._waiting = [dots];
 
-    const { cancel } = po$t(cells, (c, streaming) => {
+    const { cancel } = po$t(cells.map(cell => {
+      if (cell.style) delete cell.style;
+      cell.role = cell.role.replace(' err', '');
+      return cell;
+    }), (c, streaming) => {
       const { fin = !streaming, err, cell } = got(c, streaming);
       const failed = typeof fin == "number" && fin < 0;
       const role = `assistant${err || failed ? " err" : ""}`;
