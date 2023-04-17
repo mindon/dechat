@@ -127,11 +127,15 @@ export async function po$t(list, cb, { api, headers, streaming }) {
     return;
   }
 
-  const reader = resp.body.pipeThrough(new TextDecoderStream()).getReader();
+  const pipe = resp.body.pipeThrough(new TextDecoderStream());
+  const reader = pipe.getReader();
+  const cancel = () => {
+    pipe.cancel("~canceled");
+  };
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-    cb(value.split("data: "), streaming, reader.cancel);
+    cb(value.split("data: "), streaming, cancel);
   }
 }
 win.po$t = po$t;
