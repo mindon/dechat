@@ -57,7 +57,7 @@ export class DeChat extends LitElement {
     this._asking = something;
     if (n > -1) {
       cells[n].content = something;
-      cells[n + 1].content = "";
+      cells[n + 1] = { role: "assistant", style: "busying", content: dots };
     }
 
     const asking = { role: "user", content: something };
@@ -65,7 +65,7 @@ export class DeChat extends LitElement {
     const feed = (answer, coderr) => {
       this._cancel = undefined;
       if (n > -1) {
-        cells[n + 1].content = answer.content;
+        cells[n + 1] = answer;
         if (coderr < 0) {
           cells[n + 1].style = "err";
         } else {
@@ -245,7 +245,11 @@ export class DeChat extends LitElement {
           const { role, content, style } = cell;
           const cc = i == imax - 1 && body.length < max &&
             !role.includes("err");
-          return html`<div class="${role} ${style || ""}"><p>${content}</p>${
+          return html`<div class="${role} ${style || ""}">${
+            content === dots
+              ? html`<div id="dots">${dots}</div>`
+              : html`<p>${content}</p>`
+          }${
             role.includes("assistant")
               ? html`
 ${
