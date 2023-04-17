@@ -5,7 +5,6 @@ import {
   LitElement,
 } from "https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js";
 
-// !bundle=module
 import { t$ } from "./t$.js";
 import { aichat, copix, po$t, q$ } from "./de.js";
 
@@ -54,7 +53,7 @@ export class DeChat extends LitElement {
   ask(something, i) {
     const { cells = [], api = aichat } = this;
     const n = !isNaN(i) && i < cells.length - 1 ? i : -1;
-    this._curernt = n;
+    this._current = n;
     this._asking = something;
     if (n > -1) {
       cells[n].content = something;
@@ -129,6 +128,10 @@ export class DeChat extends LitElement {
         return;
       }
       this._waiting = _waiting.slice(0);
+      if (n > -1) {
+        cells[n + 1].content = this._waiting;
+        this.requestUpdate();
+      }
     }, { api: url, streaming, headers }) || {};
     this._cancel = cancel;
   }
@@ -242,18 +245,7 @@ export class DeChat extends LitElement {
           const { role, content, style } = cell;
           const cc = i == imax - 1 && body.length < max &&
             !role.includes("err");
-          const busying = _current > -1 && _current == i &&
-            !role.includes("user") &&
-            _waiting && _waiting.length > 0;
-          return html`<div class="${role} ${style || ""}${
-            busying ? " busying" : ""
-          }">${
-            busying
-              ? (_waiting[0] === dots
-                ? html`<div id="dots">${_waiting}</div>`
-                : html`<p>${_waiting}</p>`)
-              : html`<p>${content}</p>`
-          }${
+          return html`<div class="${role} ${style || ""}"><p>${content}</p>${
             role.includes("assistant")
               ? html`
 ${
@@ -307,7 +299,7 @@ ${
         }</div>`
         : ""
     }<div class="next ${imax > 0 ? "has" : ""}">
-      <input autofocus id="mysay" class="rl" @keypress=${this._enter} placeholder="${
+      <input autofocus type="search" id="mysay" class="rl" @keypress=${this._enter} placeholder="${
       imax > 0 ? t$`${this.lang}${max - body.length}Session` : ""
     }">
       <a class="btn rr" ?disabled=${
