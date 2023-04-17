@@ -137,7 +137,7 @@ export async function po$t(list, cb, { api, headers, streaming }) {
   const cancel = () => {
     ctl.abort?.();
     canceled = true;
-    // pipe.cancel("~canceled");
+    cb({ err: "~canceled" }, streaming);
   };
   while (true) {
     if (canceled) break;

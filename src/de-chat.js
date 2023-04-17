@@ -204,7 +204,9 @@ export class DeChat extends LitElement {
     if (this.cells.length > 0) {
       this.requestUpdate();
     } else {
-      this._cancel?.();
+      if (this._cancel) {
+        this._cancel();
+      }
       const p = this.renderRoot.host.parentNode;
       p.removeChild(this.renderRoot.host); // may left something else
     }
