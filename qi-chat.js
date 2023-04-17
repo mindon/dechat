@@ -1,4 +1,4 @@
-//
+// !bundle=off
 import {
   css,
   html,

@@ -1,12 +1,13 @@
-//  !bundle=off
+// !bundle=off
 import {
   css,
   html,
   LitElement,
 } from "https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js";
 
+// !bundle=module
 import { t$ } from "./t$.js";
-import { aichat, copix, po$t, q$, q$$ } from "./de.js";
+import { aichat, copix, po$t, q$ } from "./de.js";
 
 const dots = "❞";
 t$.got({
@@ -241,14 +242,18 @@ export class DeChat extends LitElement {
           const { role, content, style } = cell;
           const cc = i == imax - 1 && body.length < max &&
             !role.includes("err");
-          return html`<div class="${role} ${style || ""}"><p>${
-            _current > -1 && _current == i && !role.includes("user") &&
-              _waiting && _waiting.length > 0
+          const busying = _current > -1 && _current == i &&
+            !role.includes("user") &&
+            _waiting && _waiting.length > 0;
+          return html`<div class="${role} ${style || ""}${
+            busying ? " busying" : ""
+          }">${
+            busying
               ? (_waiting[0] === dots
                 ? html`<div id="dots">${_waiting}</div>`
                 : html`<p>${_waiting}</p>`)
-              : content
-          }</p>${
+              : html`<p>${content}</p>`
+          }${
             role.includes("assistant")
               ? html`
 ${
@@ -409,6 +414,9 @@ ${
   .user:hover a.btn,
   .assistant:hover a.btn {
     display: inline-flex;
+  }
+  .busying:hover a.stop {
+    display: inline-flex!important;
   }
   a * {
     pointer-events: none;
