@@ -86,7 +86,6 @@ export class DeChat extends LitElement {
       feed({ role: "assistant", content: t$`${this.lang}ApiErr` }, -1);
       return;
     }
-    this.cells = cells.slice(0);
     this._waiting = [dots];
 
     const { cancel } = po$t(
@@ -290,7 +289,7 @@ ${
         : ""
     }${
       _current === -1 && _asking
-        ? html`<div class="assistant"><p>${_asking}</p></div>`
+        ? html`<div class="user"><p>${_asking}</p></div>`
         : ""
     }${
       _current === -1 && _waiting && _waiting.length > 0
