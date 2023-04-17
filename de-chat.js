@@ -242,8 +242,11 @@ export class DeChat extends LitElement {
           const cc = i == imax - 1 && body.length < max &&
             !role.includes("err");
           return html`<div class="${role} ${style || ""}"><p>${
-            _current > -1 && _current == i && !role.includes("user")
-              ? _waiting
+            _current > -1 && _current == i && !role.includes("user") &&
+              _waiting && _waiting.length > 0
+              ? (_waiting[0] === dots
+                ? html`<div id="dots">${_waiting}</div>`
+                : html`<p>${_waiting}</p>`)
               : content
           }</p>${
             role.includes("assistant")
