@@ -131,9 +131,8 @@ export async function po$t(list, cb, { api, headers, streaming }) {
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-    cb(value.split("data: "), streaming);
+    cb(value.split("data: "), streaming, reader.cancel);
   }
-  return { cancel: reader.cancel };
 }
 win.po$t = po$t;
 

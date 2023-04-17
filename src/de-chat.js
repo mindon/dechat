@@ -95,7 +95,8 @@ export class DeChat extends LitElement {
         return cell;
       }).filter((cell) => !!cell);
 
-    const { cancel } = po$t(data, (c, streaming) => {
+    po$t(data, (c, streaming, cancel) => {
+      this._cancel = cancel;
       const { fin = !streaming, err, cell } = got(c, streaming);
       const failed = typeof fin == "number" && fin < 0;
       const role = `assistant${err || failed ? " err" : ""}`;
@@ -133,7 +134,6 @@ export class DeChat extends LitElement {
         this.requestUpdate();
       }
     }, { api: url, streaming, headers }) || {};
-    this._cancel = cancel;
   }
 
   next() {
@@ -236,7 +236,7 @@ export class DeChat extends LitElement {
 
   render() {
     const { max = 4096 } = this.api || {};
-    const { cells = [], _current, _asking, _waiting } = this;
+    const { cells = [], _current, _asking, _waiting, _cancel } = this;
     const imax = cells.length;
     const body = JSON.stringify(cells);
     return html`${
@@ -253,15 +253,17 @@ export class DeChat extends LitElement {
             role.includes("assistant")
               ? html`
 ${
-                this._cancel
+                _cancel
                   ? html`<a class="btn cancel" @click=${this._stop}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
   <path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3z"/>
 </svg></a>`
-                  : html`<a class="btn regen" data-i="${i}" @click=${this._regen}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
+                  : (i !== _current
+                    ? html`<a class="btn regen" data-i="${i}" @click=${this._regen}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
   <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
 </svg></a>`
+                    : "")
               }
               <a class="btn trash ${
                 !cc ? "r2" : ""
