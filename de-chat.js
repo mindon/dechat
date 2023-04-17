@@ -90,9 +90,9 @@ export class DeChat extends LitElement {
 
     const { cancel } = po$t(cells.map(cell => {
       if (cell.style) delete cell.style;
-      cell.role = cell.role.replace(' err', '');
+      if (/err/.test(cell.role)) return undefined;
       return cell;
-    }), (c, streaming) => {
+    }).filter(cell => !!cell), (c, streaming) => {
       const { fin = !streaming, err, cell } = got(c, streaming);
       const failed = typeof fin == "number" && fin < 0;
       const role = `assistant${err || failed ? " err" : ""}`;
