@@ -57,6 +57,7 @@ export class DeChat extends LitElement {
     this._asking = something;
     if (n > -1) {
       cells[n].content = something;
+      cells[n + 1].content = "";
     }
 
     const asking = { role: "user", content: something };
@@ -87,45 +88,52 @@ export class DeChat extends LitElement {
     }
     this.cells = cells.slice(0);
     this._waiting = [dots];
+    if (n == -1) {
+      cells.push(asking);
+    }
 
-    const { cancel } = po$t(cells.map(cell => {
-      if (cell.style) delete cell.style;
-      if (/err/.test(cell.role)) return undefined;
-      return cell;
-    }).filter(cell => !!cell), (c, streaming) => {
-      const { fin = !streaming, err, cell } = got(c, streaming);
-      const failed = typeof fin == "number" && fin < 0;
-      const role = `assistant${err || failed ? " err" : ""}`;
-      if (err) {
-        this.renderRoot.host.classList.add("fin");
-      }
-      if (!streaming || err) {
-        feed({
-          role,
-          ...cell,
-          ...(err ? { content: html`[ERR] ${err}` } : {}),
-        }, err ? -2 : 0);
-        return;
-      }
-      let { _waiting } = this;
-      if (!_waiting) {
-        _waiting = [];
-      }
-      let s = cell && cell.content;
-      if (_waiting.length == 0 || _waiting[0] == dots) {
-        _waiting = [s];
-      } else {
-        _waiting.push(s);
-      }
-      if (fin !== false) {
-        feed(
-          { role, ...cell, content: _waiting.join("") },
-          err || failed ? -3 : 0,
-        );
-        return;
-      }
-      this._waiting = _waiting.slice(0);
-    }, { api: url, streaming, headers }) || {};
+    const { cancel } = po$t(
+      cells.map((cell) => {
+        if (cell.style) delete cell.style;
+        if (/err/.test(cell.role)) return undefined;
+        return cell;
+      }).filter((cell) => !!cell),
+      (c, streaming) => {
+        const { fin = !streaming, err, cell } = got(c, streaming);
+        const failed = typeof fin == "number" && fin < 0;
+        const role = `assistant${err || failed ? " err" : ""}`;
+        if (err) {
+          this.renderRoot.host.classList.add("fin");
+        }
+        if (!streaming || err) {
+          feed({
+            role,
+            ...cell,
+            ...(err ? { content: html`[ERR] ${err}` } : {}),
+          }, err ? -2 : 0);
+          return;
+        }
+        let { _waiting } = this;
+        if (!_waiting) {
+          _waiting = [];
+        }
+        let s = cell && cell.content;
+        if (_waiting.length == 0 || _waiting[0] == dots) {
+          _waiting = [s];
+        } else {
+          _waiting.push(s);
+        }
+        if (fin !== false) {
+          feed(
+            { role, ...cell, content: _waiting.join("") },
+            err || failed ? -3 : 0,
+          );
+          return;
+        }
+        this._waiting = _waiting.slice(0);
+      },
+      { api: url, streaming, headers },
+    ) || {};
     this._cancel = cancel;
   }
 
