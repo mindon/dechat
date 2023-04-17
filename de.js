@@ -133,6 +133,7 @@ export async function po$t(list, cb, { api, headers, streaming }) {
     if (done) break;
     cb(value.split("data: "), streaming);
   }
+  return { cancel: reader.cancel };
 }
 win.po$t = po$t;
 
