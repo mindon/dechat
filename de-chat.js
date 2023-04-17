@@ -88,12 +88,9 @@ export class DeChat extends LitElement {
     }
     this.cells = cells.slice(0);
     this._waiting = [dots];
-    if (n == -1) {
-      cells.push(asking);
-    }
 
     const { cancel } = po$t(
-      cells.map((cell) => {
+      cells.concat(n === -1 ? [asking] : []).map((cell) => {
         if (cell.style) delete cell.style;
         if (/err/.test(cell.role)) return undefined;
         return cell;
