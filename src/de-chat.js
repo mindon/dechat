@@ -13,6 +13,10 @@ t$.got({
   ApiErr: { zh_CN: "须正确设置api", en_US: "proper api required" },
   Continue: { zh_CN: "继续" },
   Remove: { zh_CN: "删除此记录？", en_US: "Remove this log?" },
+  Regen: {
+    zh_CN: "重新提问？当前答案将被清除",
+    en_US: "Retry? Current one will be cleared",
+  },
   Copy: { zh_CN: "拷贝" },
   Delete: { zh_CN: "删除" },
   Session: {
@@ -229,6 +233,11 @@ export class DeChat extends LitElement {
 
   _regen(evt) {
     const t = evt.target;
+    const failed = t.parentElement.classList.contains("err");
+    if (!failed && !confirm(t$`${this.lang}Regen`)) {
+      return;
+    }
+
     const { i } = t.dataset;
     const n = parseInt(i, 10);
     const cell = this.cells[n - 1];
@@ -256,12 +265,11 @@ export class DeChat extends LitElement {
               ? html`
 ${
                 _cancel
-                  ? html`<a class="btn cancel" @click=${this._stop}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
-  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-  <path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3z"/>
+                  ? html`<a class="btn cancel" @click=${this._stop}><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
+  <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
 </svg></a>`
                   : (i !== _current
-                    ? html`<a class="btn regen" data-i="${i}" @click=${this._regen}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
+                    ? html`<a class="btn regen" data-i="${i}" @click=${this._regen}><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
   <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
 </svg></a>`
@@ -285,7 +293,7 @@ ${
               }}></a>`
               : (
                 role.includes("user")
-                  ? html`<a class="btn edit" data-i="${i}" @click=${this._edit}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                  ? html`<a class="btn edit" data-i="${i}" @click=${this._edit}><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
 </svg></a>`
@@ -462,21 +470,6 @@ ${
     height: 16px;
     content: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%23933%22%20class%3D%22bi%20bi-clipboard-pulse%22%20viewBox%3D%220%200%2016%2016%22%3E%0A%20%20%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M10%201.5a.5.5%200%200%200-.5-.5h-3a.5.5%200%200%200-.5.5v1a.5.5%200%200%200%20.5.5h3a.5.5%200%200%200%20.5-.5v-1Zm-5%200A1.5%201.5%200%200%201%206.5%200h3A1.5%201.5%200%200%201%2011%201.5v1A1.5%201.5%200%200%201%209.5%204h-3A1.5%201.5%200%200%201%205%202.5v-1Zm-2%200h1v1H3a1%201%200%200%200-1%201V14a1%201%200%200%200%201%201h10a1%201%200%200%200%201-1V3.5a1%201%200%200%200-1-1h-1v-1h1a2%202%200%200%201%202%202V14a2%202%200%200%201-2%202H3a2%202%200%200%201-2-2V3.5a2%202%200%200%201%202-2Zm6.979%203.856a.5.5%200%200%200-.968.04L7.92%2010.49l-.94-3.135a.5.5%200%200%200-.895-.133L4.232%2010H3.5a.5.5%200%200%200%200%201h1a.5.5%200%200%200%20.416-.223l1.41-2.115%201.195%203.982a.5.5%200%200%200%20.968-.04L9.58%207.51l.94%203.135A.5.5%200%200%200%2011%2011h1.5a.5.5%200%200%200%200-1h-1.128L9.979%205.356Z%22/%3E%0A%3C/svg%3E);
   }
-
-  a.regen,
-  a.cancel,
-  a.edit {
-    padding: .5rem!important;
-    opacity: .8;
-    position: absolute!important;
-    left: 1rem;
-    bottom: 1rem;
-    z-index: 1;
-  } 
-  a.edit {
-    bottom: auto;
-    top: .8rem;
-  }
   
   .continue {
     width: 32px;
@@ -527,6 +520,19 @@ ${
   .btn:not(:disabled):active { box-shadow: var(--a) 0 4px 4px 0, var(--b) 0 8px 12px 6px;}
   .btn:disabled { box-shadow: var(--a) 0 1px 3px 0, var(--b) 0 4px 8px 3px;pointer-events:none;cursor:default}
   
+
+  a.regen,
+  a.cancel,
+  a.edit {
+    padding: .25rem!important;
+    opacity: .8;
+    position: absolute!important;
+    left: 1rem;
+    bottom: .5rem;
+    z-index: 1;
+    box-shadow: none!important;
+    transition: none;
+  } 
   .next {
     max-width: 64rem;
     margin: 0 auto;
