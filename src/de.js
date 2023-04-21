@@ -274,6 +274,7 @@ function speechListen(canceled) {
     return;
   }
   speechTid = setTimeout(() => {
+    recognition.abort();
     recognition.start();
   }, 1000);
 }

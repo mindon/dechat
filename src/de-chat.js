@@ -84,7 +84,7 @@ export class DeChat extends LitElement {
       this.cells = cells.slice(0);
       if (coderr == -1) return;
       this.notify(`de-${coderr < -1 ? "new" : "changed"}`);
-      if (speech && coderr > -1) {
+      if (speech && (!coderr || coderr > -1)) {
         this.speak(answer.content);
       }
     }; // update
