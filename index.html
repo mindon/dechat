@@ -20,13 +20,39 @@ body {
   </div>
   <qi-chat></qi-chat>
   <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a></div>
-  <script type="module" src="qi-chat.0011dd25571717530babbd3770281402.js"></script>
+  <script type="module" src="qi-chat.c13cf6c8d3fe6a876b69707cdf657d44.js"></script>
   <script>
     const q = new URL(`about:blank${location.search}`).searchParams;
     const vip = q.get("vip");
     if (vip && /^\w{1,16}$/.test(vip)) {
       document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
     }
+
+    let _lastSpeech = '';
+    window.addEventListener('beforeunload', () => {
+      speechSynthesis.cancel();
+    });
+
+    document.addEventListener('speak', (evt) => {
+      const text = evt.detail;
+      if (_lastSpeech != text) {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+      _lastSpeech = text;
+      return;
+    }
+    if (speechSynthesis.speaking) {
+      if (speechSynthesis.paused) {
+        speechSynthesis.resume();
+      } else {
+        speechSynthesis.pause();
+      }
+    } else {
+      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    }
+  });
   </script>
   
 

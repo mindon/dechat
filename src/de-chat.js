@@ -245,6 +245,10 @@ export class DeChat extends LitElement {
     this.ask(cell.content, n - 1);
   }
 
+  speak(text) {
+    document.dispatchEvent(new CustomEvent("speak", { detail: text }));
+  }
+
   render() {
     const { max = 4096 } = this.api || {};
     const { cells = [], _current, _asking, _waiting, _cancel } = this;
@@ -290,6 +294,8 @@ ${
                   : ""
               }<a class="btn copix" title="${t$`${this.lang}Copy`}" @click=${() => {
                 copix(content);
+              }}></a><a class="btn speak" @click=${() => {
+                this.speak(content);
               }}></a>`
               : (
                 role.includes("user")
@@ -315,7 +321,7 @@ ${
         }</div>`
         : ""
     }<div class="next ${imax > 0 ? "has" : ""}">
-      <input autofocus type="search" id="mysay" class="rl" @keypress=${this._enter} placeholder="${
+      <input  x-webkit-speech autofocus type="search" id="mysay" class="rl" @keypress=${this._enter} placeholder="${
       imax > 0 ? t$`${this.lang}${max - body.length}Session` : ""
     }">
       <a class="btn rr" ?disabled=${
@@ -453,6 +459,7 @@ ${
     z-index: 1;
     opacity: .8;
   }
+  .speak,
   .trash {
     padding: .5rem!important;
     color: red;
@@ -462,6 +469,12 @@ ${
     bottom: 1rem;
     z-index: 1;
   }
+  .speak {
+    bottom: auto;
+    top: 1rem;
+    right: 1rem;
+  }
+
   .trash.r2 {
     right: 5.5rem;
   }
@@ -469,6 +482,12 @@ ${
     width: 16px;
     height: 16px;
     content: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%23933%22%20class%3D%22bi%20bi-clipboard-pulse%22%20viewBox%3D%220%200%2016%2016%22%3E%0A%20%20%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M10%201.5a.5.5%200%200%200-.5-.5h-3a.5.5%200%200%200-.5.5v1a.5.5%200%200%200%20.5.5h3a.5.5%200%200%200%20.5-.5v-1Zm-5%200A1.5%201.5%200%200%201%206.5%200h3A1.5%201.5%200%200%201%2011%201.5v1A1.5%201.5%200%200%201%209.5%204h-3A1.5%201.5%200%200%201%205%202.5v-1Zm-2%200h1v1H3a1%201%200%200%200-1%201V14a1%201%200%200%200%201%201h10a1%201%200%200%200%201-1V3.5a1%201%200%200%200-1-1h-1v-1h1a2%202%200%200%201%202%202V14a2%202%200%200%201-2%202H3a2%202%200%200%201-2-2V3.5a2%202%200%200%201%202-2Zm6.979%203.856a.5.5%200%200%200-.968.04L7.92%2010.49l-.94-3.135a.5.5%200%200%200-.895-.133L4.232%2010H3.5a.5.5%200%200%200%200%201h1a.5.5%200%200%200%20.416-.223l1.41-2.115%201.195%203.982a.5.5%200%200%200%20.968-.04L9.58%207.51l.94%203.135A.5.5%200%200%200%2011%2011h1.5a.5.5%200%200%200%200-1h-1.128L9.979%205.356Z%22/%3E%0A%3C/svg%3E);
+  }
+
+  .speak::before {
+    width: 16px;
+    height: 16px;
+    content: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22currentColor%22%20class%3D%22bi%20bi-megaphone-fill%22%20viewBox%3D%220%200%2016%2016%22%3E%0A%20%20%3Cpath%20d%3D%22M13%202.5a1.5%201.5%200%200%201%203%200v11a1.5%201.5%200%200%201-3%200v-11zm-1%20.724c-2.067.95-4.539%201.481-7%201.656v6.237a25.222%2025.222%200%200%201%201.088.085c2.053.204%204.038.668%205.912%201.56V3.224zm-8%207.841V4.934c-.68.027-1.399.043-2.008.053A2.02%202.02%200%200%200%200%207v2c0%201.106.896%201.996%201.994%202.009a68.14%2068.14%200%200%201%20.496.008%2064%2064%200%200%201%201.51.048zm1.39%201.081c.285.021.569.047.85.078l.253%201.69a1%201%200%200%201-.983%201.187h-.548a1%201%200%200%201-.916-.599l-1.314-2.48a65.81%2065.81%200%200%201%201.692.064c.327.017.65.037.966.06z%22/%3E%0A%3C/svg%3E);
   }
   
   .continue {
