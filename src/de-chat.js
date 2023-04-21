@@ -56,7 +56,7 @@ export class DeChat extends LitElement {
 
   ask(something, i) {
     const { cells = [], api = aichat } = this;
-    const speech = i === -9;
+    const speech = i === -1;
     const n = !isNaN(i) && i < cells.length - 1 ? i : -1;
     this._current = n;
     this._asking = something;
