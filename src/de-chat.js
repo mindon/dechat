@@ -56,6 +56,7 @@ export class DeChat extends LitElement {
 
   ask(something, i) {
     const { cells = [], api = aichat } = this;
+    const speech = i === -9;
     const n = !isNaN(i) && i < cells.length - 1 ? i : -1;
     this._current = n;
     this._asking = something;
@@ -83,6 +84,9 @@ export class DeChat extends LitElement {
       this.cells = cells.slice(0);
       if (coderr == -1) return;
       this.notify(`de-${coderr < -1 ? "new" : "changed"}`);
+      if (speech && coderr > -1) {
+        this.speak(answer.content);
+      }
     }; // update
 
     const { url, streaming, headers, got } = api;
