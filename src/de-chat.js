@@ -253,6 +253,16 @@ export class DeChat extends LitElement {
     document.dispatchEvent(new CustomEvent("speak", { detail: text }));
   }
 
+  speech(starting = true) {
+    const mysay = q$("#mysay", this.renderRoot);
+    if (!/^\s*$/.test(mysay.value)) {
+      return;
+    }
+    if (window.speechListen) {
+      speechListen(starting);
+    }
+  }
+
   render() {
     const { max = 4096 } = this.api || {};
     const { cells = [], _current, _asking, _waiting, _cancel } = this;
@@ -330,7 +340,11 @@ ${
     }">
       <a class="btn rr" ?disabled=${
       _waiting && _waiting.length > 0 ? true : false
-    } role="button" @click=${this.next}>
+    } role="button" @click=${this.next} @mousedown=${(evt) => {
+      this.speech();
+    }} @mouseup=${(evt) => {
+      this.speech(false);
+    }}>
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
 </svg>
@@ -541,7 +555,6 @@ ${
   .btn:not(:disabled):active { box-shadow: var(--a) 0 4px 4px 0, var(--b) 0 8px 12px 6px;}
   .btn:disabled { box-shadow: var(--a) 0 1px 3px 0, var(--b) 0 4px 8px 3px;pointer-events:none;cursor:default}
   
-
   a.regen,
   a.cancel,
   a.edit {

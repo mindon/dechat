@@ -267,17 +267,18 @@ if (q.has("lang")) {
 }
 
 let speechTid;
-function speechListen(canceled) {
+export function speechListen(starting = true) {
   speechTid && clearTimeout(speechTid);
-  if (canceled) {
+  if (starting === false) {
     recognition.stop();
     return;
   }
+  recognition.abort();
   speechTid = setTimeout(() => {
-    recognition.abort();
     recognition.start();
-  }, 1000);
+  }, 500);
 }
+window.speechListen = speechListen;
 
 document.addEventListener("keydown", (e) => {
   if (e.altKey) {
