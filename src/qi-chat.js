@@ -179,9 +179,9 @@ export class QiChat extends LitElement {
     a.click();
   }
 
-  ask(text) {
+  ask(text, auto) {
     const t = q$("de-chat:not(.fin)", this.renderRoot);
-    if (t) t.ask(text, -1);
+    if (t) t.ask(text, auto ? -1 : undefined);
   }
 
   render() {

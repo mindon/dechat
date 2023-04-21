@@ -177,6 +177,9 @@ export const aichat = {
       if (vip && /^\w{1,16}$/.test(vip)) d.push([`${prefix}-vip`, vip]);
       q.delete("vip");
     }
+    "lang,auto-speech".split(",").forEach((name) => {
+      if (q.has(name)) q.delete(name);
+    });
     const qs = q.toString();
     if (qs) d.push([`${prefix}-args`, btoa(qs)]);
     return d;
