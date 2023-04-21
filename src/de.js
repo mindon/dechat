@@ -162,12 +162,12 @@ export function data$(name, d) {
 win.data$ = data$;
 
 // openai
+const q = new URL(`about:blank${location.search}`).searchParams;
 const _DONE = "[DONE]";
 export const aichat = {
   url: "/chat?stream",
   streaming: true,
   headers: () => {
-    const q = new URL(`about:blank${location.search}`).searchParams;
     const d = [];
     const prefix = "x-openai";
     const ik = data$("ik");
@@ -218,3 +218,71 @@ export const aichat = {
     return { fin, cell: { content } };
   }, // end of got
 };
+
+let _lastSpeech = "";
+win.addEventListener("beforeunload", () => {
+  speechSynthesis.cancel();
+});
+
+document.addEventListener("speak", (evt) => {
+  const text = evt.detail;
+  if (_lastSpeech != text) {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+    }
+    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    _lastSpeech = text;
+    return;
+  }
+  if (speechSynthesis.speaking) {
+    if (speechSynthesis.paused) {
+      speechSynthesis.resume();
+    } else {
+      speechSynthesis.pause();
+    }
+  } else {
+    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }
+});
+
+const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition ||
+  Function;
+// const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
+// const SpeechRecognitionEvent =
+//   window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
+
+const recognition = new SpeechRecognition();
+recognition.continuous = false;
+recognition.lang = q.has("lang") ? q.get("lang") || "zh-CN" : "zh-CN";
+recognition.interimResults = false;
+recognition.maxAlternatives = 1;
+recognition.onresult = (evt) => {
+  const text = evt.results[0][0].transcript;
+  if (text) {
+    win.dispatchEvent(new CustomEvent("speech-text", { detail: text }));
+  }
+};
+if (q.has("lang")) {
+  q.remove("lang");
+}
+
+let speechTid;
+function speechListen(canceled) {
+  speechTid && clearTimeout(speechTid);
+  if (canceled) {
+    recognition.stop();
+    return;
+  }
+  speechTid = setTimeout(() => {
+    recognition.start();
+  }, 1000);
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.altKey) {
+    speechListen();
+  }
+});
+document.addEventListener("keyup", (e) => {
+  speechListen(false);
+});

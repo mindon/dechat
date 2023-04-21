@@ -104,6 +104,7 @@ export class QiChat extends LitElement {
     const ia = q$("#ia", this.renderRoot);
     let last = ia.previousElementSibling;
     if (!last || last.active()) {
+      if (last) last.classList.add("fin");
       const c = doc.createElement("de-chat");
       this.renderRoot.insertBefore(c, ia);
       last = c;
@@ -176,6 +177,11 @@ export class QiChat extends LitElement {
       )
     }`;
     a.click();
+  }
+
+  ask(text) {
+    const t = q$("de-chat:not(.fin)", this.renderRoot);
+    if (t) t.ask(text);
   }
 
   render() {

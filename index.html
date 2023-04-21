@@ -20,39 +20,18 @@ body {
   </div>
   <qi-chat></qi-chat>
   <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a></div>
-  <script type="module" src="qi-chat.f6e58be13fcfa2d4c5fa58c66a3acdef.js"></script>
+  <script type="module" src="qi-chat.6bb4945b2937a860f2948a0f24d5dc4f.js"></script>
   <script>
     const q = new URL(`about:blank${location.search}`).searchParams;
     const vip = q.get("vip");
     if (vip && /^\w{1,16}$/.test(vip)) {
       document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
     }
-
-    let _lastSpeech = '';
-    window.addEventListener('beforeunload', () => {
-      speechSynthesis.cancel();
+    window.addEventListener('speech-text', (evt) => {
+      if(evt.detail) {
+        q$('qi-chat').ask(evt.detail);
+      }
     });
-
-    document.addEventListener('speak', (evt) => {
-      const text = evt.detail;
-      if (_lastSpeech != text) {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
-      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
-      _lastSpeech = text;
-      return;
-    }
-    if (speechSynthesis.speaking) {
-      if (speechSynthesis.paused) {
-        speechSynthesis.resume();
-      } else {
-        speechSynthesis.pause();
-      }
-    } else {
-      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
-    }
-  });
   </script>
   
 

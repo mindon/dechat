@@ -28,32 +28,11 @@ body {
     if (vip && /^\w{1,16}$/.test(vip)) {
       document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
     }
-
-    let _lastSpeech = '';
-    window.addEventListener('beforeunload', () => {
-      speechSynthesis.cancel();
+    window.addEventListener('speech-text', (evt) => {
+      if(evt.detail) {
+        q$('qi-chat').ask(evt.detail);
+      }
     });
-
-    document.addEventListener('speak', (evt) => {
-      const text = evt.detail;
-      if (_lastSpeech != text) {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
-      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
-      _lastSpeech = text;
-      return;
-    }
-    if (speechSynthesis.speaking) {
-      if (speechSynthesis.paused) {
-        speechSynthesis.resume();
-      } else {
-        speechSynthesis.pause();
-      }
-    } else {
-      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
-    }
-  });
   </script>
   </body>
 </html>

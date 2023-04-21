@@ -246,7 +246,7 @@ export class DeChat extends LitElement {
   }
 
   speak(text) {
-    document.dispatchEvent(new CustomEvent("speak", {detail: text}));
+    document.dispatchEvent(new CustomEvent("speak", { detail: text }));
   }
 
   render() {
