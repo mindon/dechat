@@ -22,15 +22,19 @@ body {
   <qi-chat></qi-chat>
   <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a></div>
   <script type="module" src="qi-chat.js"></script>
-  <script>
+  <script type="module">
     const q = new URL(`about:blank${location.search}`).searchParams;
     const vip = q.get("vip");
     if (vip && /^\w{1,16}$/.test(vip)) {
       document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
     }
+    const t = q$('qi-chat');
+    if (q.has('speech')) {
+      t.speech = true;
+    }
     window.addEventListener('speech-text', (evt) => {
       if(evt.detail) {
-        q$('qi-chat').ask(evt.detail, q.has('auto-speech'));
+        q$('qi-chat').ask(evt.detail);
       }
     });
   </script>

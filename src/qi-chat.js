@@ -15,6 +15,7 @@ const a = doc.createElement("a");
 export class QiChat extends LitElement {
   static properties = {
     api: { type: Object },
+    speech: { type: Boolean },
     _available: { type: Boolean },
     _ik: { type: String },
   };
@@ -179,9 +180,9 @@ export class QiChat extends LitElement {
     a.click();
   }
 
-  ask(text, auto) {
+  ask(text) {
     const t = q$("de-chat:not(.fin)", this.renderRoot);
-    if (t) t.ask(text, auto ? -1 : undefined);
+    if (t) t.ask(text, this.speech ? -1 : undefined);
   }
 
   render() {
