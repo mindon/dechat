@@ -157,9 +157,7 @@ ${o?d`<a class="btn cancel" @click=${this._stop}><svg xmlns="http://www.w3.org/2
     z-index: 1;
   }
   .speak {
-    bottom: auto;
-    top: 1rem;
-    right: 1rem;
+    right: -1.5rem;
   }
 
   .trash.r2 {

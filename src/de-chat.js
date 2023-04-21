@@ -246,7 +246,7 @@ export class DeChat extends LitElement {
   }
 
   speak(text) {
-    document.dispatchEvent(new CustomEvent("speak", { detail: text }));
+    document.dispatchEvent(new CustomEvent("speak", {detail: text}));
   }
 
   render() {
@@ -470,9 +470,7 @@ ${
     z-index: 1;
   }
   .speak {
-    bottom: auto;
-    top: 1rem;
-    right: 1rem;
+    right: -1.5rem;
   }
 
   .trash.r2 {
