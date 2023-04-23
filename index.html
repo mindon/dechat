@@ -11,32 +11,43 @@ body {
   text-align: center;
   zoom: .66;
 }
+#myvip strong {
+  color:red;text-align:center;
+  display: block;margin-bottom: .25rem;
+}
+.footer strong {
+  zoom: .8;
+  color:rgb(214, 93, 0);text-align:center;
+  display: block;margin-top: .25rem;
+}
   </style>
 </head>
   <body>
   <div style="text-align: center; color: #999;margin:1rem auto">
     跟ChatGPT-3.5聊聊天 :-p
-    <div style="zoom:.6" id="myvip">需要用自己的key对应网址，微信联系 @mindon</div>
+    <div style="zoom:.6" id="myvip">
+    <strong>麦盾的API免费额度已耗尽，请使用自己的api key</strong>  
+    需要用自己的key对应网址，微信联系 @mindon</div>
   </div>
   <qi-chat></qi-chat>
-  <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a></div>
-  <script type="module" src="qi-chat.ef9eed2c1dbe8b1b6cd6cea0a5430c3d.js"></script>
+  <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a>
+    <strong>麦盾的API免费额度已耗尽，请使用自己的api key</strong></div>
+  <script type="module" src="qi-chat.1a31a0d0ed9aa886b213bea97c2a5546.js"></script>
   <script type="module">
     const q = new URL(`about:blank${location.search}`).searchParams;
-    const vip = q.get("vip");
+    const vip = q.get("vip") || q$('html').dataset.vip;
     if (vip && /^\w{1,16}$/.test(vip)) {
-      document.querySelector('#myvip').innerText = `${vip.toUpperCase()}`;
+      q$('#myvip').innerText = `${vip.toUpperCase()}`;
+      q$('.footer strong').innerText = `-- ${vip.toUpperCase()} --`;
     }
-    const t = q$('qi-chat');
+
     if (q.has('speech')) {
-      t.speech = true;
+      q$('qi-chat').speech = true;
     }
     window.addEventListener('speech-text', (evt) => {
-      if(evt.detail) {
-        q$('qi-chat').ask(evt.detail);
-      }
+      if(evt.detail)  q$('qi-chat').ask(evt.detail);
     });
-  </script>
+    </script>
   
 
 </body></html>

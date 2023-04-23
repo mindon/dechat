@@ -163,6 +163,8 @@ win.data$ = data$;
 
 // openai
 const q = new URL(`about:blank${location.search}`).searchParams;
+const vip = q.has("vip") && /^\w{1,16}$/.test(q.get("vip")) ? q.get("vip") : "";
+if (vip) q$("html").dataset.vip = vip;
 const _DONE = "[DONE]";
 export const aichat = {
   url: "/chat?stream",
@@ -172,12 +174,10 @@ export const aichat = {
     const prefix = "x-openai";
     const ik = data$("ik");
     if (ik && ik.length > 8) d.push([`${prefix}-key`, ik]);
-    if (q.has("vip")) {
-      const vip = q.get("vip");
-      if (vip && /^\w{1,16}$/.test(vip)) d.push([`${prefix}-vip`, vip]);
-      q.delete("vip");
+    if (vip) {
+      d.push([`${prefix}-vip`, vip]);
     }
-    "lang,speech".split(",").forEach((name) => {
+    "vip,lang,speech".split(",").forEach((name) => {
       if (q.has(name)) q.delete(name);
     });
     const qs = q.toString();

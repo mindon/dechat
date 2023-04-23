@@ -18,6 +18,7 @@ export class QiChat extends LitElement {
     speech: { type: Boolean },
     _available: { type: Boolean },
     _ik: { type: String },
+    plugins: { type: Array },
   };
 
   constructor() {
@@ -25,6 +26,7 @@ export class QiChat extends LitElement {
     this._available = true;
     this._ik = data$("ik");
     this.api = aichat; // {url, streaming, headers:[[]...], got: (d, streaming) => {fin, cell, err?}}
+    this.plugins = [];
   }
 
   firstUpdated() {

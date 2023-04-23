@@ -39,6 +39,8 @@ export class DeChat extends LitElement {
     _asking: { type: String },
     _waiting: { type: Array },
     _stage: { type: HTMLElement },
+    _ime: { type: String },
+    _plugins: { type: Array },
   };
 
   constructor() {
@@ -52,6 +54,7 @@ export class DeChat extends LitElement {
       this.renderRoot.host.parentNode;
     this._stage = _stage;
     this.api = (_stage.host || _stage).api || globalThis.deAPI || aichat;
+    this._plugins = [...(_stage.plugins || [])];
   }
 
   ask(something, i) {
@@ -149,7 +152,7 @@ export class DeChat extends LitElement {
     const { renderRoot } = this;
     const mysay = q$("#mysay", renderRoot);
     if (/^\s*$/.test(mysay.value)) {
-      mysay.focus();
+      this._focus();
       return;
     }
     this.ask(mysay.value.trim());
@@ -163,8 +166,12 @@ export class DeChat extends LitElement {
     if (c || typeof c === "string") mysay.value = c.trim();
     this._tid = setTimeout(() => {
       if (renderRoot.host.classList.contains("fin")) return;
-      q$("#mysay", renderRoot).focus();
+      this._focus();
     }, 300);
+  }
+
+  _focus() {
+    q$("#mysay", this.renderRoot).focus();
   }
 
   active() {
@@ -263,9 +270,74 @@ export class DeChat extends LitElement {
     }
   }
 
+  plugin(addon) {
+    const x = !(addon instanceof Array) ? [addon] : addon;
+    const addons = [...(this._plugins || [])];
+    let i = 0;
+    x.forEach((a) => {
+      if (addons.filter((t) => t.id == a.id).length > 0) {
+        return;
+      }
+      addons.push(a);
+      i += 1;
+    });
+    if (i > 0) {
+      this._plugins = addons;
+    }
+  }
+
+  _view(content, role, _plugins) {
+    let body = content;
+    if (_plugins && _plugins.length > 0) {
+      _plugins.forEach((addon) => {
+        if (addon.has(content)) {
+          body =
+            ((role == "user" && addon.brief) || addon.render)?.(body, html) ||
+            body;
+        }
+      });
+    }
+    return body;
+  }
+
+  _pane({ placeholder, size, disabled = false, ime }, _plugins) {
+    const custom =
+      (ime
+        ? (_plugins || []).filter((addon) =>
+          addon.ime == ime || addon.id == ime
+        )
+        : [])[0];
+    if (custom) {
+      return custom({ placeholder, size, disabled, ime }, html);
+    }
+    return html`<div class="next ${size > 0 ? "has" : ""}">
+    <input  x-webkit-speech autofocus type="search" id="mysay" class="rl" @keypress=${this._enter} placeholder="${placeholder}">
+    <a class="btn rr" ?disabled=${
+      disabled || false
+    } role="button" @click=${this.next} @mousedown=${(evt) => {
+      this.speech();
+    }} @mouseup=${(evt) => {
+      this.speech(false);
+    }}>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+<path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
+</svg>
+    </a>
+  </div>`;
+  }
+
   render() {
     const { max = 4096 } = this.api || {};
-    const { cells = [], _current, _asking, _waiting, _cancel } = this;
+    const {
+      cells = [],
+      _current,
+      _asking,
+      _waiting,
+      _cancel,
+      _view,
+      _plugins,
+      _ime,
+    } = this;
     const imax = cells.length;
     const body = JSON.stringify(cells);
     return html`${
@@ -277,11 +349,10 @@ export class DeChat extends LitElement {
           return html`<div class="${role} ${style || ""}">${
             content === dots
               ? html`<div id="dots">${dots}</div>`
-              : html`<p>${content}</p>`
+              : html`<p>${_view(content, role, _plugins)}</p>`
           }${
             role.includes("assistant")
-              ? html`
-${
+              ? html`${
                 _cancel
                   ? html`<a class="btn cancel" @click=${this._stop}><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
   <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
@@ -334,22 +405,16 @@ ${
             : html`<p>${_waiting}</p>`
         }</div>`
         : ""
-    }<div class="next ${imax > 0 ? "has" : ""}">
-      <input  x-webkit-speech autofocus type="search" id="mysay" class="rl" @keypress=${this._enter} placeholder="${
-      imax > 0 ? t$`${this.lang}${max - body.length}Session` : ""
-    }">
-      <a class="btn rr" ?disabled=${
-      _waiting && _waiting.length > 0 ? true : false
-    } role="button" @click=${this.next} @mousedown=${(evt) => {
-      this.speech();
-    }} @mouseup=${(evt) => {
-      this.speech(false);
-    }}>
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
-</svg>
-      </a>
-    </div>`;
+    }${
+      this._pane({
+        placeholder: imax > 0
+          ? t$`${this.lang}${max - body.length}Session`
+          : "",
+        size: imax,
+        disabled: _waiting && _waiting.length > 0,
+        ime: _ime,
+      }, _plugins)
+    }`;
   }
 
   static styles = css`
