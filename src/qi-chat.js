@@ -226,7 +226,12 @@ export class QiChat extends LitElement {
   async download() {
     let raw;
     try {
-      raw = JSON.stringify(await db$.query().map((d) => d.value));
+      const { result, total } = await db$.query().catch((err) =>
+        console.error(err)
+      );
+      if (total > 0) {
+        raw = JSON.stringify(result.map((d) => d.value));
+      }
     } catch (err) {}
     if (!raw) {
       alert("没有记录数据");
