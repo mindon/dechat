@@ -55,7 +55,6 @@ export class DeChat extends LitElement {
       this.renderRoot.host.parentNode;
     this._stage = _stage;
     this.api = (_stage.host || _stage).api || globalThis.deAPI || aichat;
-    this._plugins = [...(_stage.plugins || [])];
   }
 
   ask(something, i) {
@@ -339,11 +338,14 @@ export class DeChat extends LitElement {
       _waiting,
       _cancel,
       _view,
-      _plugins,
       _ime,
     } = this;
     const imax = cells.length;
     const body = JSON.stringify(cells);
+    const _plugins = [
+      ...(this._stage?.host?.plugins || []),
+      ...(this._plugins || []),
+    ];
     return html`${
       imax > 0
         ? cells.map((cell, i) => {
@@ -406,7 +408,7 @@ export class DeChat extends LitElement {
         ? html`<div class="assistant">${
           _waiting[0] === dots
             ? html`<div id="dots">${_waiting}</div>`
-            : html`<p>${_waiting}</p>`
+            : html`<p>${_view(_waiting, role, _plugins)}</p>`
         }</div>`
         : ""
     }${

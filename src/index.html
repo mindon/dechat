@@ -49,6 +49,11 @@ html.speaking {
     if (q.has('speech')) {
       q$('qi-chat').speech = true;
     }
+    // q$('qi-chat').plugins = [{
+    //   has: () => true,
+    //   brief: (body, html) => body,
+    //   render: (body, html) => body,
+    // }];
     window.addEventListener('speech-text', (evt) => {
       if(evt.detail)  q$('qi-chat').ask(evt.detail);
     });
