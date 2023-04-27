@@ -45,7 +45,7 @@ export class QiChat extends LitElement {
           data.push([q.cells, q.key]);
         }
       });
-      if (key && data.length == 0) {
+      if ((key === 0 || key) && data.length == 0) {
         db$.do((store) => store.delete(key));
         this._total -= 1;
         this._start -= 1;
@@ -74,8 +74,29 @@ export class QiChat extends LitElement {
       });
     });
 
-    this.more();
-    this.new();
+    (async () => {
+      const ai = data$("ai");
+      let refresh = true;
+      if (ai) {
+        data$("ai", false);
+        try {
+          const raw = JSON.parse(ai);
+          if (raw && raw.length > 0) {
+            refresh = false;
+            const { result, total } = await db$.query({ n: 0 });
+            await db$.do(async (store) => {
+              await store.clear();
+              const list = raw.concat(result.map((d) => d.value).reverse());
+              this.load(list.slice(-this._npp), list.length);
+              return Promise.all(list.map((d) => store.add(d)));
+            });
+          }
+        } catch (err) {}
+      } else {
+        refresh && this.more();
+      }
+      this.new();
+    })();
 
     window.addEventListener("beforeunload", (evt) => {
       let busying = false;
@@ -106,10 +127,11 @@ export class QiChat extends LitElement {
     const keys = [];
     const data = raw.filter((d) =>
       d &&
-      (d.key && (d.value || d.value.length > 0) || d.length > 0)
+      ((d.key || d.key === 0) && (d.value || d.value.length > 0) ||
+        d.length > 0)
     ).map((d, i) => {
       const { key, value } = d;
-      if (!key && !value) return d;
+      if ((!key && key !== 0) && !value) return d;
       keys[i] = key;
       return d.value;
     }); // old [[{}]], new [{key, value:[{}]}]
