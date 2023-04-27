@@ -12,12 +12,18 @@ body {
   text-align: center;
   zoom: .66;
 }
+.footer .alarm {
+  color: #666;
+}
 #myvip strong,
 .footer strong {
   zoom: .9;
   color:rgb(214, 93, 0);text-align:center;
   display: block;margin: .25rem auto;
   font-weight: 400;
+}
+html.speaking {
+  --speaking-ico: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2220%22%20height%3D%2220%22%20fill%3D%22%23d63%22%20class%3D%22bi%20bi-mic-fill%22%20viewBox%3D%220%200%2016%2016%22%3E%0A%20%20%3Cpath%20d%3D%22M5%203a3%203%200%200%201%206%200v5a3%203%200%200%201-6%200V3z%22/%3E%0A%20%20%3Cpath%20d%3D%22M3.5%206.5A.5.5%200%200%201%204%207v1a4%204%200%200%200%208%200V7a.5.5%200%200%201%201%200v1a5%205%200%200%201-4.5%204.975V15h3a.5.5%200%200%201%200%201h-7a.5.5%200%200%201%200-1h3v-2.025A5%205%200%200%201%203%208V7a.5.5%200%200%201%20.5-.5z%22/%3E%0A%3C/svg%3E);
 }
   </style>
 </head>
@@ -30,14 +36,14 @@ body {
   </div>
   <qi-chat></qi-chat>
   <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a>
-    <strong>麦盾的API免费额度已耗尽，请使用自己的api key</strong></div>
+    <div class="alarm"><strong>麦盾的API免费额度已耗尽，请使用自己的api key</strong></div></div>
   <script type="module" src="qi-chat.js"></script>
   <script type="module">
     const q = new URL(`about:blank${location.search}`).searchParams;
     const vip = q.get("vip") || q$('html').dataset.vip;
     if (vip && /^\w{1,16}$/.test(vip)) {
       q$('#myvip').innerText = `${vip.toUpperCase()}`;
-      q$('.footer strong').innerText = `-- ${vip.toUpperCase()} --`;
+      q$('.footer .alarm').innerText = `-- ${vip.toUpperCase()} --`;
     }
 
     if (q.has('speech')) {

@@ -35,6 +35,7 @@ export class DeChat extends LitElement {
     lang: { type: String },
     for: { type: String },
     _tid: { type: Object },
+    key: { type: Number },
     _current: { type: Number },
     _asking: { type: String },
     _waiting: { type: Array },
@@ -179,6 +180,9 @@ export class DeChat extends LitElement {
   }
 
   notify(name, detail) {
+    if (name == "de-changed" && !detail) {
+      detail = this.key;
+    }
     (this._stage.host || this._stage).dispatchEvent(
       new CustomEvent(name, { detail }),
     );
@@ -444,6 +448,19 @@ export class DeChat extends LitElement {
   #dots a {color:inherit;text-decoration:none}
   @-webkit-keyframes loading { 50% {color:#333} }
   @keyframes loading { 50% {color:#333} }
+
+ .next::after {
+    content: var(--speaking-ico, '');
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    opacity: .5;
+    animation: speaking 1s;
+  }
+  @keyframes speaking { 50% {opacity: .2} }
   
   .user,
   .assistant,

@@ -18,6 +18,9 @@ export class QiChat extends LitElement {
     speech: { type: Boolean },
     _available: { type: Boolean },
     _ik: { type: String },
+    _npp: { type: Number },
+    _start: { type: Number },
+    _total: { type: Number },
     plugins: { type: Array },
   };
 
@@ -25,32 +28,44 @@ export class QiChat extends LitElement {
     super();
     this._available = true;
     this._ik = data$("ik");
+    this._start = 0;
+    this._npp = 3;
+    this._total = 0;
     this.api = aichat; // {url, streaming, headers:[[]...], got: (d, streaming) => {fin, cell, err?}}
     this.plugins = [];
   }
 
   firstUpdated() {
     const c = this.renderRoot.host;
-    c.addEventListener("de-changed", () => {
+    c.addEventListener("de-changed", async (evt) => {
+      const { detail: key } = evt;
       const data = [];
-      q$$("de-chat", this.renderRoot, (q) => {
-        if (q.cells?.length > 0) {
-          data.push(q.cells);
+      q$$("de-chat", this.renderRoot, async (q) => {
+        if (q.cells?.length > 0 && (!key || q.key == key)) {
+          data.push([q.cells, q.key]);
         }
       });
-      data$("ai", JSON.stringify(data));
-      this._available = data.length > 0;
+      if (key && data.length == 0) {
+        db$.do((store) => store.delete(key));
+        this._total -= 1;
+        this._start -= 1;
+      } else {
+        if (this._total < this._start) {
+          this._total = this._start;
+        }
+      }
+      data.length > 0 && await db$.do((store) =>
+        Promise.all(
+          data.filter((d) => !!d[1]).concat(data.filter((d) => !d[1]))
+            .map(([cells, key]) => store.put(cells, key)),
+        )
+      );
+      this._available = await db$.count() > 0;
     });
 
     c.addEventListener("de-new", () => {
       this.new();
     });
-    const raw = data$("ai");
-    if (raw) {
-      this.load(raw);
-    } else {
-      this._available = false;
-    }
 
     c.addEventListener("de-focus", (evt) => {
       q$$("de-chat", this.renderRoot, (q) => {
@@ -59,6 +74,7 @@ export class QiChat extends LitElement {
       });
     });
 
+    this.more();
     this.new();
 
     window.addEventListener("beforeunload", (evt) => {
@@ -77,36 +93,56 @@ export class QiChat extends LitElement {
   }
 
   // load logs
-  load(raw) {
-    try {
-      const data = JSON.parse(raw);
-      if (!data || data.length == 0) {
-        return false;
-      }
-      let qi = q$("#ia", this.renderRoot);
-      const last = qi.previousElementSibling;
-      if (last && (!last.active())) {
+  load(raw, total) {
+    if (total !== undefined && typeof total === "number") {
+      this._total = total;
+      this._start = 0;
+    }
+    let last;
+    if (total instanceof HTMLElement) {
+      last = total;
+      this._start += this._npp;
+    }
+    const keys = [];
+    const data = raw.filter((d) =>
+      d &&
+      (d.key && (d.value || d.value.length > 0) || d.length > 0)
+    ).map((d, i) => {
+      const { key, value } = d;
+      if (!key && !value) return d;
+      keys[i] = key;
+      return d.value;
+    }); // old [[{}]], new [{key, value:[{}]}]
+    if (!data || data.length == 0) {
+      return false;
+    }
+
+    let qi = q$("#ia", this.renderRoot);
+    if (last) {
+      qi = last;
+    } else {
+      last = qi.previousElementSibling;
+      if (last && last.tagName === "DE-CHAT" && (!last.active())) {
         qi = last;
       }
-      data.forEach((d) => {
-        const c = doc.createElement("de-chat");
-        c.className = "fin";
-        c.cells = d;
-        this.renderRoot.insertBefore(c, qi);
-      });
-      this._available = true;
-      return true;
-    } catch (err) {
-      console.error(err);
     }
-    return false;
+    const { _total = 0 } = this;
+    data.forEach((d, i) => {
+      const c = doc.createElement("de-chat");
+      c.key = keys[i] || (_total + i);
+      c.className = "fin";
+      c.cells = d;
+      this.renderRoot.insertBefore(c, qi);
+    });
+    this._available = true;
+    return true;
   }
 
   // new chat
   new() {
     const ia = q$("#ia", this.renderRoot);
     let last = ia.previousElementSibling;
-    if (!last || last.active()) {
+    if (!last || last.tagName !== "DE-CHAT" || last.active()) {
       if (last) last.classList.add("fin");
       const c = doc.createElement("de-chat");
       this.renderRoot.insertBefore(c, ia);
@@ -130,13 +166,13 @@ export class QiChat extends LitElement {
   }
 
   // clear logs
-  clear() {
-    if (!data$("ai") || !confirm("确认要清除所有记录？")) return;
+  async clear() {
+    if (await db$.count() === 0 || !confirm("确认要清除所有记录？")) return;
     q$$("de-chat", this.renderRoot, (t) => {
       if (!t.active()) return;
       t.parentNode.removeChild(t);
     });
-    data$("ai", false);
+    db$.do((store) => store.clear());
     this._available = false;
     this.new();
   }
@@ -150,18 +186,48 @@ export class QiChat extends LitElement {
 
     const r = new FileReader();
     r.onload = (evt) => {
-      const data = evt.target.result;
-      if (this.load(data)) {
-        this.renderRoot.host.dispatchEvent(new CustomEvent("de-changed", {}));
+      const raw = evt.target.result;
+      try {
+        const data = JSON.parse(raw).filter((d) => d && d.length > 0);
+        if (this.load(data)) {
+          if (data.length > 0) this._start += data.length;
+          this.renderRoot.host.dispatchEvent(new CustomEvent("de-changed", {}));
+        }
+      } catch (err) {
+        alert(err);
       }
       this.new();
     };
     r.readAsText(files[0]);
   };
 
+  more(evt) {
+    (async () => {
+      try {
+        const { result: raw, total = 0 } = await db$.query({
+          start: this._start + (evt ? this._npp : 0),
+          n: this._npp,
+        });
+        if (raw) {
+          this.load(
+            raw.reverse(),
+            evt ? q$("#mymore", this.renderRoot).nextElementSibling : total,
+          );
+        } else {
+          this._available = false;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }
+
   // export logs
-  download() {
-    const raw = data$("ai");
+  async download() {
+    let raw;
+    try {
+      raw = JSON.stringify(await db$.query().map((d) => d.value));
+    } catch (err) {}
     if (!raw) {
       alert("没有记录数据");
       return;
@@ -188,7 +254,13 @@ export class QiChat extends LitElement {
   }
 
   render() {
-    return html`<div id="ia" style="text-align: center;position:relative;display: flex; align-items: center;">
+    return html`<div id="mymore" style="text-align: center;margin-bottom:.5rem"><a class="btn ${
+      this._start < this._total - this._npp ? "" : "none"
+    }" @click=${this.more}>${
+      this._total - this._npp - this._start
+    }<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
+    <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+  </svg></a></div><div id="ia" style="text-align: center;position:relative;display: flex; align-items: center;">
     <a class="btn" id="myimport" @click=${() => {
       q$("#myfile", this.renderRoot).click();
     }} title="导入记录"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
@@ -271,6 +343,9 @@ export class QiChat extends LitElement {
 }
 .alarm {
   color: #f00;
+}
+.none {
+  display: none;
 }
 `;
 }

@@ -24,7 +24,7 @@ export function q$$(id, doc, cb) {
 }
 win.q$$ = q$$;
 
-const doc = document;
+const doc = win.document || { addEventListener: () => {} };
 // copy fallback
 function fallback(msg, cb) {
   let t;
@@ -161,8 +161,152 @@ export function data$(name, d) {
 }
 win.data$ = data$;
 
+// indexeddb
+export function db$(id, name, todo) {
+  if (!win.indexedDB) {
+    return;
+  }
+  const { mode = "readonly" } = todo;
+  let req = indexedDB.open(id);
+  req.onsuccess = (evt) => {
+    const db = evt.target.result;
+    if (!db.objectStoreNames.contains(name)) {
+      todo(null, `no ${name} data`);
+      return;
+    }
+    todo(db.transaction([name], mode).objectStore(name));
+  };
+  req.onupgradeneeded = (evt) => {
+    const db = evt.target.result;
+    let store;
+    if (!db.objectStoreNames.contains(name)) {
+      store = db.createObjectStore(
+        name,
+        todo.options || { autoIncrement: true },
+      );
+    } else {
+      store = db.transaction([name], mode).objectStore(name);
+    }
+    todo(store);
+  };
+
+  req.onblocked = (evt) => {
+    todo(null, evt.target.error || "blocked");
+  };
+  req.onerror = (evt) => {
+    todo(null, evt.target.error || "error");
+  };
+}
+
+db$.do = async (req, options) => {
+  const { mode = "readwrite", name = "chat", id = "de" } = options || {};
+  return new Promise((resolve, reject) => {
+    const todo = async (store, err) => {
+      if (err || !store) {
+        return reject(err || "invalid store");
+      }
+      const r = req(store);
+      r.onsuccess = (evt) => {
+        resolve(evt.target.result);
+      };
+      r.onerror = (evt) => {
+        reject(evt.target.error);
+      };
+      return r;
+    };
+    todo.mode = mode;
+    db$(id, name, todo);
+  });
+};
+
+db$.get = async (key, options) => {
+  const { name = "chat", id = "de" } = options || {};
+  return new Promise((resolve, reject) => {
+    const todo = (store, err) => {
+      if (err || !store) {
+        return reject(err || "invalid store");
+      }
+      const req = store.get(key);
+      req.onerror = (evt) => {
+        reject(evt.target.error);
+      };
+      req.onsuccess = (evt) => {
+        resolve(evt.target.result);
+      };
+    };
+    todo.mode = "readonly";
+    db$(id, name, todo);
+  });
+};
+
+db$.count = async (options) => {
+  const { cond, cb, name = "chat", id = "de" } = options ||
+    {};
+  const result = [];
+  return new Promise((resolve, reject) => {
+    const todo = (store, err) => {
+      if (err || !store) {
+        return reject(err || "invalid store");
+      }
+      const stat = store.count(cond);
+      stat.onerror = (evt) => {
+        reject(evt.target.error);
+      };
+      stat.onsuccess = (evt) => {
+        const n = evt.target.result;
+        if (cb) {
+          cb(store, { resolve, reject, count: n });
+        } else {
+          resolve(n);
+        }
+      };
+    };
+    todo.mode = "readonly";
+    db$(id, name, todo);
+  });
+};
+
+db$.query = async (options) => {
+  const { cond = null, start = 0, n = 3, name = "chat", id = "de" } = options ||
+    {};
+  const result = [];
+  let total = 0;
+  return db$.count({
+    cond,
+    name,
+    id,
+    cb: (store, { resolve, reject, count }) => {
+      total = count;
+      const req = store.openCursor(cond, "prev");
+      let i = 0;
+      req.onsuccess = (evt) => {
+        const cursor = evt.target.result;
+        if (cursor) {
+          if (i < start) {
+            i += 1;
+            cursor.continue();
+            return;
+          }
+          result.push({ key: cursor.key, value: cursor.value });
+          if (n > 0 && result.length == n) {
+            resolve({ result, total });
+            return;
+          }
+          cursor.continue();
+        } else {
+          resolve({ result, total });
+        }
+      };
+      req.onerror = (evt) => {
+        reject(evt.target.error);
+      };
+    },
+  });
+};
+win.db$ = db$;
+
 // openai
-const q = new URL(`about:blank${location.search}`).searchParams;
+const q = new URL(`about:blank${win.location?.search || ""}`).searchParams;
 const vip = q.has("vip") && /^\w{1,16}$/.test(q.get("vip")) ? q.get("vip") : "";
 if (vip) q$("html").dataset.vip = vip;
 const _DONE = "[DONE]";
@@ -223,15 +367,16 @@ export const aichat = {
 };
 
 let _lastSpeech = "";
+const speechSynthesis = win.speechSynthesis || {};
 win.addEventListener("beforeunload", () => {
-  speechSynthesis.cancel();
+  speechSynthesis.cancel?.();
 });
 
-document.addEventListener("speak", (evt) => {
+doc.addEventListener("speak", (evt) => {
   const text = evt.detail;
   if (_lastSpeech != text) {
     if (speechSynthesis.speaking) {
-      speechSynthesis.cancel();
+      speechSynthesis.cancel?.();
     }
     speechSynthesis.speak(new SpeechSynthesisUtterance(text));
     _lastSpeech = text;
@@ -248,7 +393,8 @@ document.addEventListener("speak", (evt) => {
   }
 });
 
-const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition ||
+const SpeechRecognition = win.SpeechRecognition ||
+  win.webkitSpeechRecognition ||
   Function;
 // const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
 // const SpeechRecognitionEvent =
@@ -273,21 +419,24 @@ let speechTid;
 export function speechListen(starting = true) {
   speechTid && clearTimeout(speechTid);
   if (starting === false) {
+    doc.documentElement.classList.remove("speaking");
     recognition.stop();
     return;
   }
   recognition.abort();
   speechTid = setTimeout(() => {
     recognition.start();
-  }, 500);
+    doc.documentElement.classList.add("speaking");
+  }, 100);
 }
 window.speechListen = speechListen;
 
-document.addEventListener("keydown", (e) => {
+doc.addEventListener("keydown", (e) => {
   if (e.altKey) {
     speechListen();
   }
 });
-document.addEventListener("keyup", (e) => {
+
+doc.addEventListener("keyup", (e) => {
   speechListen(false);
 });
