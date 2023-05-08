@@ -92,7 +92,7 @@ export class DeChat extends LitElement {
       }
     }; // update
 
-    const { url, streaming, headers, got } = api;
+    const { url, streaming, headers, got, max } = api;
     if (!url || !got) {
       feed({ role: "assistant", content: t$`${this.lang}ApiErr` }, -1);
       return;
@@ -106,7 +106,17 @@ export class DeChat extends LitElement {
         return cell;
       }).filter((cell) => !!cell);
 
-    po$t(data, (c, streaming, cancel) => {
+    let list = data;
+    if (max) {
+      let i = 0;
+      while (JSON.stringify(list).length > max) {
+        i += 2;
+        if (list.length == 2) break;
+        list = list.slice(i);
+      }
+    }
+
+    po$t(list, (c, streaming, cancel) => {
       this._cancel = cancel;
       const { fin = !streaming, err, cell } = got(c, streaming);
       const failed = typeof fin == "number" && fin < 0;

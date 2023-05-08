@@ -49,14 +49,30 @@ html.speaking {
     if (q.has('speech')) {
       q$('qi-chat').speech = true;
     }
-    // q$('qi-chat').plugins = [{
-    //   has: () => true,
-    //   brief: (body, html) => body,
-    //   render: (body, html) => body,
-    // }];
     window.addEventListener('speech-text', (evt) => {
       if(evt.detail)  q$('qi-chat').ask(evt.detail);
     });
+    </script>
+    <script type="module">
+// import {resolveMarkdown} from 'https://cdn.jsdelivr.net/npm/lit-markdown/lib/index.mjs';
+// import katex from 'https://cdn.jsdelivr.net/npm/katex/+esm';
+
+// const mdx = (body) => {
+//   try {
+//     return resolveMarkdown(body.replace(/[$]{2}.+?[$]{2}|\`{3}math[\r\n]+.+?\`{3}/g,
+//       (s) => katex.renderToString(s, {
+//         throwOnError: false
+//     })), { includeImages: true, includeCodeBlockClassNames: true });
+//   } catch(err) {
+//     return body;
+//   }
+// };
+
+// q$('qi-chat').plugins.push({
+//   has: () => true,
+//   brief: (body, html) => mdx(body),
+//   render: (body, html) => mdx(body),
+// });
     </script>
   </body>
 </html>

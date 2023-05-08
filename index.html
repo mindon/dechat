@@ -36,7 +36,7 @@ html.speaking {
   <qi-chat></qi-chat>
   <div class="footer">DeQi ➜ ❞AI: 麦盾出品，Powered by ChatGPT 3.5 from <a href="https://openai.com" target="_blank">OpenAI</a>
     <div class="alarm"><strong>麦盾的API免费额度已耗尽，请使用自己的api key</strong></div></div>
-  <script type="module" src="qi-chat.b0e0a124b0595348faa8a32d834694fe.js"></script>
+  <script type="module" src="qi-chat.61a60661b0bfbca6ca15659d27f915f1.js"></script>
   <script type="module">
     const q = new URL(`about:blank${location.search}`).searchParams;
     const vip = q.get("vip") || q$('html').dataset.vip;
@@ -48,14 +48,30 @@ html.speaking {
     if (q.has('speech')) {
       q$('qi-chat').speech = true;
     }
-    // q$('qi-chat').plugins = [{
-    //   has: () => true,
-    //   brief: (body, html) => body,
-    //   render: (body, html) => body,
-    // }];
     window.addEventListener('speech-text', (evt) => {
       if(evt.detail)  q$('qi-chat').ask(evt.detail);
     });
+    </script>
+    <script type="module">
+// import {resolveMarkdown} from 'https://cdn.jsdelivr.net/npm/lit-markdown/lib/index.mjs';
+// import katex from 'https://cdn.jsdelivr.net/npm/katex/+esm';
+
+// const mdx = (body) => {
+//   try {
+//     return resolveMarkdown(body.replace(/[$]{2}.+?[$]{2}|\`{3}math[\r\n]+.+?\`{3}/g,
+//       (s) => katex.renderToString(s, {
+//         throwOnError: false
+//     })), { includeImages: true, includeCodeBlockClassNames: true });
+//   } catch(err) {
+//     return body;
+//   }
+// };
+
+// q$('qi-chat').plugins.push({
+//   has: () => true,
+//   brief: (body, html) => mdx(body),
+//   render: (body, html) => mdx(body),
+// });
     </script>
   
 
