@@ -248,7 +248,7 @@ export class QiChat extends LitElement {
   async download() {
     let raw;
     try {
-      const { result, total } = await db$.query().catch((err) =>
+      const { result, total } = await db$.query({n: 0}).catch((err) =>
         console.error(err)
       );
       if (total > 0) {
