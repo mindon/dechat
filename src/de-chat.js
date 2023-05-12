@@ -488,6 +488,7 @@ export class DeChat extends LitElement {
     margin-bottom: .5rem;
     text-align: right;
     padding-right: 3.2rem;
+    display: flex!important;
   }
   .user::after {
     width: 20px;
@@ -522,7 +523,9 @@ export class DeChat extends LitElement {
     max-width: 100%;
   }
   .user > p {
-    text-index: 0rem;
+    text-indent: 0;
+    text-align: left;
+    margin-left: auto;
   }
   .assistant::before {
     width: 20px;
