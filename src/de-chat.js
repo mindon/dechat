@@ -340,7 +340,7 @@ export class DeChat extends LitElement {
   }
 
   render() {
-    const { max = 4096 } = this.api || {};
+    const { max = 16384 } = this.api || {}; // 16k
     const {
       cells = [],
       _current,

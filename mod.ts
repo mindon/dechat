@@ -53,13 +53,13 @@ async function handler(request: Request): Promise<Response> {
 
     const xai = {
       messages,
-      model: "gpt-3.5-turbo-0301",
-      temperature: 0.9,
+      model: "gpt-3.5-turbo-16k-0613",
+      temperature: 0.8,
       max_tokens: 256, // 2048
       top_p: 1,
       stream: false,
       frequency_penalty: 0.0,
-      presence_penalty: 0.6,
+      presence_penalty: 0.0,
       ...xargs,
     };
     if (request.url.includes("?")) {
