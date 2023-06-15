@@ -418,7 +418,7 @@ export class DeChat extends LitElement {
         ? html`<div class="assistant">${
           _waiting[0] === dots
             ? html`<div id="dots">${_waiting}</div>`
-            : html`<p>${_view(_waiting, 'assistant', _plugins)}</p>`
+            : html`<p>${_view(_waiting, "assistant", _plugins)}</p>`
         }</div>`
         : ""
     }${

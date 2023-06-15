@@ -149,9 +149,10 @@ export class QiChat extends LitElement {
       }
     }
     const { _total = 0 } = this;
+    let n = 1, imax = Math.max(...keys);
     data.forEach((d, i) => {
       const c = doc.createElement("de-chat");
-      c.key = keys[i] || (_total + i);
+      c.key = keys[i] || imax + (n++);
       c.className = "fin";
       c.cells = d;
       this.renderRoot.insertBefore(c, qi);
@@ -248,7 +249,7 @@ export class QiChat extends LitElement {
   async download() {
     let raw;
     try {
-      const { result, total } = await db$.query({n: 0}).catch((err) =>
+      const { result, total } = await db$.query({ n: 0 }).catch((err) =>
         console.error(err)
       );
       if (total > 0) {
