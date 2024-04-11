@@ -66,24 +66,30 @@ function fallback(msg, cb) {
 // copy text
 export function copix(msg, cb) {
   try {
-    navigator.permissions.query({ name: "clipboard-write" }).then((result) => {
-      if (result.state !== "granted" && result.state !== "prompt") {
-        fallback(msg, cb);
-        return;
-      }
-      const clipr = navigator.clipboard;
-      if (!clipr) {
-        fallback(msg, cb);
-        return;
-      }
-      clipr.writeText(msg.value || msg || "").then((d) => {
-        cb && cb(d);
-      }, (err) => {
+    navigator.permissions
+      .query({ name: "clipboard-write" })
+      .then((result) => {
+        if (result.state !== "granted" && result.state !== "prompt") {
+          fallback(msg, cb);
+          return;
+        }
+        const clipr = navigator.clipboard;
+        if (!clipr) {
+          fallback(msg, cb);
+          return;
+        }
+        clipr.writeText(msg.value || msg || "").then(
+          (d) => {
+            cb && cb(d);
+          },
+          (err) => {
+            fallback(msg, cb);
+          },
+        );
+      })
+      .catch((err) => {
         fallback(msg, cb);
       });
-    }).catch((err) => {
-      fallback(msg, cb);
-    });
   } catch (err) {
     fallback(msg, cb);
   }
@@ -240,8 +246,7 @@ db$.get = async (key, options) => {
 };
 
 db$.count = async (options) => {
-  const { cond, cb, name = "chat", id = "de" } = options ||
-    {};
+  const { cond, cb, name = "chat", id = "de" } = options || {};
   const result = [];
   return new Promise((resolve, reject) => {
     const todo = (store, err) => {
@@ -267,8 +272,13 @@ db$.count = async (options) => {
 };
 
 db$.query = async (options) => {
-  const { cond = null, start = 0, n = 3, name = "chat", id = "de" } = options ||
-    {};
+  const {
+    cond = null,
+    start = 0,
+    n = 3,
+    name = "chat",
+    id = "de",
+  } = options || {};
   const result = [];
   let total = 0;
   return db$.count({
@@ -334,34 +344,38 @@ export const aichat = {
     }
     if (!streaming) {
       const { choices = [] } = d || {};
-      const { content } = choices.length > 0 && choices[0] || {};
+      const { content } = (choices.length > 0 && choices[0]) || {};
       if (!content) {
-        return { err: d.error && d.error.message || "unknown error" };
+        return { err: (d.error && d.error.message) || "unknown error" };
       }
       return { cell: { content } };
     }
 
     let fin = false;
-    const content = d.map((v) => {
-      if (!v) return "";
-      if (!v.startsWith("{")) {
-        fin = v.trim() == _DONE;
-        return fin ? "" : v;
-      }
-      const z = JSON.parse(v.trim());
-      const { error = {} } = z;
-      if (error.message) {
-        fin = -2;
-        return `[!ERR] ${error.message}`;
-      }
-      return z;
-    }).map((v) =>
-      !v
-        ? ""
-        : (typeof v === "string"
-          ? v
-          : v.choices && v.choices[0].delta.content || "")
-    ).join("");
+    const content = d
+      .map((v) => {
+        if (!v) return "";
+        if (!v.startsWith("{")) {
+          fin = v.trim() == _DONE;
+          return fin ? "" : v;
+        }
+        const z = JSON.parse(v.trim());
+        const { error = {} } = z;
+        if (error.message) {
+          fin = -2;
+          return `[!ERR] ${error.message}`;
+        }
+        return z;
+      })
+      .map((v) =>
+        !v
+          ? ""
+          : (typeof v === "string"
+              ? v
+              : (v.choices && v.choices[0].delta.content) || ""
+            ).replace(/\n$/, ""),
+      )
+      .join("");
     return { fin, cell: { content } };
   }, // end of got
 };
@@ -393,9 +407,8 @@ doc.addEventListener("speak", (evt) => {
   }
 });
 
-const SpeechRecognition = win.SpeechRecognition ||
-  win.webkitSpeechRecognition ||
-  Function;
+const SpeechRecognition =
+  win.SpeechRecognition || win.webkitSpeechRecognition || Function;
 // const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
 // const SpeechRecognitionEvent =
 //   window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
